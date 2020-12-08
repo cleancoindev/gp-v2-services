@@ -31,3 +31,4 @@ serde_json = { version = "1.0", optional = true }
 
 [build-dependencies]
 ethcontract-generate = "0.9"
+maplit = "1.0"

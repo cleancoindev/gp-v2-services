@@ -231,6 +231,7 @@ dependencies = [
  "ethcontract",
  "ethcontract-generate",
  "log",
+ "maplit",
  "serde",
  "serde_json",
 ]
