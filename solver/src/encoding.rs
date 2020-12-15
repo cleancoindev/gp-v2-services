@@ -4,7 +4,7 @@ use contracts::UniswapV2Router02;
 use model::{OrderCreation, OrderKind};
 use primitive_types::{H160, U256};
 
-pub const TRADE_STRIDE: usize = 204;
+pub const TRADE_STRIDE: usize = 206;
 const INTERACTION_BASE_SIZE: usize = 20 + 3; // target address + data length
 const UNISWAP_DATA_SIZE: usize = 260;
 const UNISWAP_TOTAL_SIZE: usize = INTERACTION_BASE_SIZE + UNISWAP_DATA_SIZE;
@@ -26,9 +26,11 @@ pub fn encode_trade(
     order.fee_amount.to_big_endian(&mut result[74..106]);
     result[106] = encode_order_flags(order);
     executed_amount.to_big_endian(&mut result[107..139]);
-    result[139] = order.signature.v;
-    result[140..172].copy_from_slice(order.signature.r.as_bytes());
-    result[172..204].copy_from_slice(order.signature.s.as_bytes());
+    // Fee discount
+    result[140..142].copy_from_slice(&[0, 0]);
+    result[141] = order.signature.v;
+    result[142..174].copy_from_slice(order.signature.r.as_bytes());
+    result[174..206].copy_from_slice(order.signature.s.as_bytes());
     result
 }
 
@@ -144,9 +146,11 @@ mod tests {
         assert_eq!(encoded[74..106], u8_as_32_bytes_be(8));
         assert_eq!(encoded[106], 0b11);
         assert_eq!(encoded[107..139], u8_as_32_bytes_be(3));
-        assert_eq!(encoded[139], 9);
-        assert_eq!(encoded[140..172], u8_as_32_bytes_be(10));
-        assert_eq!(encoded[172..204], u8_as_32_bytes_be(11));
+        assert_eq!(encoded[139], 0);
+        assert_eq!(encoded[140], 0);
+        assert_eq!(encoded[141], 9);
+        assert_eq!(encoded[142..174], u8_as_32_bytes_be(10));
+        assert_eq!(encoded[174..206], u8_as_32_bytes_be(11));
     }
 
     #[test]

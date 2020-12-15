@@ -113,7 +113,7 @@ impl OrderCreation {
 // See https://github.com/gnosis/gp-v2-contracts/blob/main/src/contracts/libraries/GPv2Encoding.sol
 impl OrderCreation {
     const ORDER_TYPE_HASH: [u8; 32] =
-        hex!("b71968fcf5e55b9c3370f2809d4078a4695be79dfa43e5aa1f2baa0a9b84f186");
+        hex!("b2b38b9dcbdeb41f7ad71dea9aed79fb47f7bbc3436576fe994b43d5b16ecdec");
 
     fn order_digest(&self) -> [u8; 32] {
         let mut hash_data = [0u8; 320];
@@ -126,10 +126,15 @@ impl OrderCreation {
         hash_data[188..192].copy_from_slice(&self.valid_to.to_be_bytes());
         hash_data[220..224].copy_from_slice(&self.app_data.to_be_bytes());
         self.fee_amount.to_big_endian(&mut hash_data[224..256]);
-        hash_data[287] = match self.kind {
-            OrderKind::Sell => 0,
-            OrderKind::Buy => 1,
+        let encoded_kind = match self.kind {
+            OrderKind::Buy => {
+                hex!("6ed88e868af0a1983e3886d5f3e95a2fafbd6c3450bc229e27342283dc429ccc")
+            }
+            OrderKind::Sell => {
+                hex!("f3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee346775")
+            }
         };
+        hash_data[256..288].copy_from_slice(&encoded_kind);
         hash_data[319] = self.partially_fillable as u8;
         signing::keccak256(&hash_data)
     }
@@ -496,7 +501,7 @@ mod tests {
                 s: hex!("4cd8e52110ca7d1ba7493828bb811969115aff9d8358a5071bd2e7d15c1362bd").into(),
             },
         };
-        let expected_owner = hex!("70997970C51812dc3A010C7d01b50e0d17dc79C8");
+        let expected_owner = hex!("a5a168f3981c37e08ba8682731b1b9719a2b2a50");
         let owner = order.validate_signature(&domain_separator).unwrap();
         assert_eq!(owner, expected_owner.into());
     }
@@ -522,7 +527,7 @@ mod tests {
                 s: hex!("68f04221fd6ac0e8aebfb048cf6c75ca882cd20c6e06aec094c278f8e44c1759").into(),
             },
         };
-        let expected_owner = hex!("70997970C51812dc3A010C7d01b50e0d17dc79C8");
+        let expected_owner = hex!("9ef607e85bf94ab684d1d3a34fb6ad1ad6cbe3a2");
         let owner = order.validate_signature(&domain_separator).unwrap();
         assert_eq!(owner, expected_owner.into());
     }
