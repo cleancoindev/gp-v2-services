@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use super::single_pair_settlement::{AmmSwapExactTokensForTokens, SinglePairSettlement};
 use crate::settlement::Trade;
 use anyhow::{anyhow, Result};

@@ -39,7 +39,10 @@ async fn main() {
     let transport = web3::transports::Http::new(args.shared.node_url.as_str())
         .expect("transport creation failed");
     let web3 = web3::Web3::new(transport);
-    let uniswap_contract = contracts::UniswapV2Router02::deployed(&web3)
+    let uniswap_router = contracts::UniswapV2Router02::deployed(&web3)
+        .await
+        .expect("couldn't load deployed uniswap router");
+    let uniswap_factory = contracts::UniswapV2Factory::deployed(&web3)
         .await
         .expect("couldn't load deployed uniswap router");
     let chain_id = web3
@@ -54,6 +57,11 @@ async fn main() {
             .expect("couldn't load deployed settlement");
     let orderbook =
         solver::orderbook::OrderBookApi::new(args.orderbook_url, args.orderbook_timeout);
-    let mut driver = Driver::new(settlement_contract, uniswap_contract, orderbook);
+    let mut driver = Driver::new(
+        settlement_contract,
+        uniswap_router,
+        uniswap_factory,
+        orderbook,
+    );
     driver.run_forever().await;
 }

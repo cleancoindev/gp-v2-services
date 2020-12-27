@@ -167,8 +167,12 @@ async fn test_with_ganache() {
         reqwest::Url::from_str(API_HOST).unwrap(),
         std::time::Duration::from_secs(10),
     );
-    let mut driver =
-        solver::driver::Driver::new(gp_settlement.clone(), uniswap_router, orderbook_api);
+    let mut driver = solver::driver::Driver::new(
+        gp_settlement.clone(),
+        uniswap_router,
+        uniswap_factory,
+        orderbook_api,
+    );
     driver.single_run().await.unwrap();
 
     // Check matching
@@ -177,14 +181,14 @@ async fn test_with_ganache() {
         .call()
         .await
         .expect("Couldn't fetch TokenB's balance");
-    assert_eq!(balance, to_wei(80));
+    assert_eq!(balance, U256::from(99650498453042316810u128));
 
     let balance = token_a
         .balance_of(trader_b.address())
         .call()
         .await
         .expect("Couldn't fetch TokenA's balance");
-    assert_eq!(balance, 62500000000000000000u128.into());
+    assert_eq!(balance, U256::from(50175363672226073522u128));
 
     // Drive orderbook in order to check the removal of settled order_b
     orderbook.run_maintenance(&gp_settlement).await;
