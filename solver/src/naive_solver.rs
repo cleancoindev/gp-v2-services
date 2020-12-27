@@ -54,6 +54,13 @@ async fn get_reserves(
     }
     let pair = UniswapV2Pair::at(&uniswap_factory.raw_instance().web3(), pair);
     let reserves = pair.get_reserves().call().await?;
+
+    // Token Pairs have a canonical ordering in which reserves are returned (https://github.com/Uniswap/uniswap-v2-core/blob/4dd59067c76dea4a0e8e4bfdda41877a6b16dedc/contracts/UniswapV2Factory.sol#L25)
+    let (token_0, token_1) = if token_0 < token_1 {
+        (token_0, token_1)
+    } else {
+        (token_1, token_0)
+    };
     Ok(maplit::hashmap! {
         token_0 => U256::from(reserves.0),
         token_1 => U256::from(reserves.1),
